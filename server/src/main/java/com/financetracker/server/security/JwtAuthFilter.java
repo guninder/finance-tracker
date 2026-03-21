@@ -49,6 +49,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private String extractToken(HttpServletRequest request) {
+        // Check X-Auth-Token first (used when behind tunnel proxy to avoid
+        // conflict with the tunnel's basic auth on the Authorization header)
+        String customHeader = request.getHeader("X-Auth-Token");
+        if (StringUtils.hasText(customHeader) && customHeader.startsWith("Bearer ")) {
+            return customHeader.substring(7);
+        }
+        // Fall back to standard Authorization header
         String header = request.getHeader("Authorization");
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             return header.substring(7);
